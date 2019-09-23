@@ -9,6 +9,10 @@
 
 import UIKit
 
+private extension UIApplication {
+    static var statusBarHight: CGFloat { return  shared.statusBarFrame.height }
+}
+
 private extension String {
     struct CollapsingKey: Hashable, RawRepresentable {
         typealias RawValue = String
@@ -22,16 +26,12 @@ private extension String {
     }
 }
 
-private struct CollapsingInnerView {
-    let view: UIView
-    var height: CGFloat?
-}
-
 class CollapsingViewController: UIViewController {
+    private lazy var collapsedBarView = CollapsedBarView()
     private var collapsed = false
+    private var barConfiguration = BarConfiguration()
     private var viewConfiguration: [String.CollapsingKey: CollapsingInnerView] = [:]
     private var lastOffsetsOfScrollView: [String: CGFloat] = [:]
-    private var collapsedRightBarItems: [UIBarButtonItem] = []
     private var collapsedIntervalSpace: CGFloat?
     private var isArranged = false
     var headerHeight: CGFloat {
@@ -40,10 +40,25 @@ class CollapsingViewController: UIViewController {
                 return
             }
             guard header.height != newValue else { return }
+            // TODO: Correct the intervalSpace.
+            // TODO: Add animation.
             header.height = newValue
             reLayoutSubviews()
         }
         get { return viewConfiguration[.header]?.height ?? 0 }
+    }
+    
+    var collapsedTitle: String? {
+        set { barConfiguration.title = newValue }
+        get { return barConfiguration.title }
+    }
+    var collapsedBarColor: UIColor {
+        set { barConfiguration.color = newValue }
+        get { return barConfiguration.color }
+    }
+    var collapsedBarRightItems: [UIBarButtonItem]? {
+        set { barConfiguration.rightItems = newValue }
+        get { return barConfiguration.rightItems }
     }
     
     override func viewDidLoad() {
@@ -66,10 +81,6 @@ extension CollapsingViewController {
     
     func configureContent(view: UIView?) {
         configure(view: view, height: 0, key: .contentView)
-    }
-    
-    func configureCollapsedRightBar(items: [UIBarButtonItem]) {
-        collapsedRightBarItems = items
     }
 }
 
@@ -137,14 +148,16 @@ private extension CollapsingViewController {
         }
         content.view.frame = CGRect(x: 0, y: offset, width: width, height: view.bounds.height - offset)
         view.addSubview(content.view)
+        
+        updateBarView()
+        collapsedBarView.frame = CGRect(origin: .zero, size: CGSize(width: width, height: UIApplication.statusBarHight + 44))
+        view.addSubview(collapsedBarView)
     }
     
     func updateNavigationBarIfNeed() {
         guard let navigationController = navigationController, !navigationController.isNavigationBarHidden else {
             return
         }
-        
-        
     }
     
     func updateHeaderPosition() {
@@ -153,5 +166,56 @@ private extension CollapsingViewController {
         var frame = header.view.frame
         frame.origin = CGPoint(x: 0, y: content.frame.minY - header.height!)
         header.view.frame = frame
+    }
+    
+    func updateBarView() {
+        collapsedBarView.title = collapsedTitle
+        collapsedBarView.backgroundColor = collapsedBarColor
+    }
+}
+
+///
+/// Inner models
+///
+private extension CollapsingViewController {
+    struct BarConfiguration {
+        var rightItems: [UIBarButtonItem]? = nil
+        var color: UIColor = .black
+        var title: String? = nil
+    }
+    
+    struct CollapsingInnerView {
+        enum Height {
+            case value(CGFloat)
+            case fillTheRest
+        }
+        let view: UIView
+        var height: CGFloat?
+    }
+}
+
+private class CollapsedBarView: UIView {
+    private let textLabel = UILabel()
+    
+    var title: String? {
+        set { textLabel.text = newValue }
+        get { return textLabel.text }
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        textLabel.font = .systemFont(ofSize: 18, weight: .bold)
+        addSubview(textLabel)
+        alpha = 0
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("Not supported xib or storyboard")
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        textLabel.frame = CGRect(origin: CGPoint(x: 60, y: UIApplication.statusBarHight),
+                                 size: bounds.inset(by: .init(top: UIApplication.statusBarHight, left: 60, bottom: 0, right: 60)).size)
     }
 }
