@@ -8,13 +8,34 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: CollapsingViewController {
 
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
+        let label = UILabel()
+        label.backgroundColor = .yellow
+        label.font = .systemFont(ofSize: 30, weight: .bold)
+        label.textAlignment = .center
+        label.text = "Header"
+        configureHeader(label, height: 180)
+        
+        let section = UIView()
+        section.backgroundColor = .blue
+        configureSection(view: section, height: 44)
+        
+        let scrollView = UIScrollView()
+        scrollView.backgroundColor = .lightGray
+        scrollView.contentSize = CGSize(width: UIScreen.main.bounds.width, height: 5000)
+        scrollView.delegate = self
+        configureContent(view: scrollView)
     }
-
 
 }
 
+extension ViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        collapsing(with: scrollView)
+    }
+}
