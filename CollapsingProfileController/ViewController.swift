@@ -21,15 +21,23 @@ class ViewController: CollapsingViewController {
         label.text = "Header"
         configureHeader(label, height: 180)
         
-        let section = UIView()
+        let section = UIView(frame: CGRect(origin: .zero,
+                                           size: CGSize(width: UIScreen.main.bounds.width, height: 44)))
         section.backgroundColor = .blue
-        configureSection(view: section, height: 44)
+        section.autoresizingMask = [.flexibleWidth]
         
-        let scrollView = UIScrollView()
+        let scrollView = UIScrollView(frame: CGRect(origin: CGPoint(x: 0, y: 44),
+                                                    size: CGSize(width: UIScreen.main.bounds.width,
+                                                                 height: 0)))
+        scrollView.autoresizingMask = [.flexibleHeight]
         scrollView.backgroundColor = .lightGray
         scrollView.contentSize = CGSize(width: UIScreen.main.bounds.width, height: 5000)
         scrollView.delegate = self
-        configureContent(view: scrollView)
+        
+        let container = UIView()
+        container.addSubview(section)
+        container.addSubview(scrollView)
+        configureContent(view: container)
     }
 
 }

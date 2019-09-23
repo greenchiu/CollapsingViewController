@@ -12,15 +12,12 @@ import UIKit
 private extension String {
     struct CollapsingKey: Hashable, RawRepresentable {
         typealias RawValue = String
-        
         static func == (lhs: String.CollapsingKey, rhs: String.CollapsingKey) -> Bool {
             return lhs.rawValue == rhs.rawValue
         }
-        
+
         fileprivate let rawValue: RawValue
-        
         static var header: CollapsingKey { return CollapsingKey(rawValue: "header") }
-        static var contentSection: CollapsingKey { return CollapsingKey(rawValue: "contentSection") }
         static var contentView: CollapsingKey { return CollapsingKey(rawValue: "contentView") }
     }
 }
@@ -65,10 +62,6 @@ class CollapsingViewController: UIViewController {
 extension CollapsingViewController {
     func configureHeader(_ header: UIView?, height: CGFloat = 0) {
         configure(view: header, height: height, key: .header)
-    }
-    
-    func configureSection(view: UIView?, height: CGFloat = 0) {
-        configure(view: view, height: height, key: .contentSection)
     }
     
     func configureContent(view: UIView?) {
@@ -129,10 +122,7 @@ private extension CollapsingViewController {
         let width = view.bounds.width
         collapsedIntervalSpace = nil
         
-        for key in [String.CollapsingKey.header, .contentSection] {
-            guard let config = viewConfiguration[key] else {
-                continue
-            }
+        if let config = viewConfiguration[.header] {
             let height = config.height ?? 0
             config.view.frame = CGRect(x: 0, y: offset, width: width, height: height)
             view.addSubview(config.view)
@@ -145,5 +135,13 @@ private extension CollapsingViewController {
         }
         content.view.frame = CGRect(x: 0, y: offset, width: width, height: view.bounds.height - offset)
         view.addSubview(content.view)
+    }
+    
+    func updateNavigationBarIfNeed() {
+        guard let navigationController = navigationController, !navigationController.isNavigationBarHidden else {
+            return
+        }
+        
+        
     }
 }
