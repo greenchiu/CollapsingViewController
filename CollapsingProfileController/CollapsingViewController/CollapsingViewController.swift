@@ -88,6 +88,7 @@ extension CollapsingViewController {
                 frame.origin = CGPoint(x: 0, y: newY)
                 frame.size = CGSize(width: view.bounds.width, height: view.bounds.height - newY)
                 content.frame = frame
+                updateHeaderPosition()
                 scrollView.contentOffset = .zero
             }
         }
@@ -97,6 +98,7 @@ extension CollapsingViewController {
                 frame.origin = CGPoint(x: 0, y: newY)
                 frame.size = CGSize(width: view.bounds.width, height: view.bounds.height - newY)
                 content.frame = frame
+                updateHeaderPosition()
                 scrollView.contentOffset = .zero
             }
         }
@@ -143,5 +145,13 @@ private extension CollapsingViewController {
         }
         
         
+    }
+    
+    func updateHeaderPosition() {
+        guard let header = viewConfiguration[.header],
+            let content = viewConfiguration[.contentView]?.view else { return }
+        var frame = header.view.frame
+        frame.origin = CGPoint(x: 0, y: content.frame.minY - header.height!)
+        header.view.frame = frame
     }
 }
