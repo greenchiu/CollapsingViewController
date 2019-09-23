@@ -13,6 +13,12 @@ class ViewController: CollapsingViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // If you set the navigationBar style as following:
+        // navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
+        // navigationController?.navigationBar.shadowImage = UIImage()
+        // navigationController?.navigationBar.isTranslucent = true
+        // you need to fill the color between the statusBar and label.
+        view.backgroundColor = .yellow
         
         let label = UILabel()
         label.backgroundColor = .yellow
@@ -40,6 +46,13 @@ class ViewController: CollapsingViewController {
         configureContent(view: container)
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
+        navigationController?.navigationBar.shadowImage = UIImage()
+        navigationController?.navigationBar.isTranslucent = true
+    }
+    
 }
 
 extension ViewController: UIScrollViewDelegate {
