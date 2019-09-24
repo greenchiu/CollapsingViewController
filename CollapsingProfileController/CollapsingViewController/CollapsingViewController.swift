@@ -9,6 +9,8 @@
 
 import UIKit
 
+private let kMinFadeInOutOffset: CGFloat = 44
+
 private extension UIApplication {
     static var statusBarHight: CGFloat { return  shared.statusBarFrame.height }
 }
@@ -34,6 +36,12 @@ class CollapsingViewController: UIViewController {
     private var lastOffsetsOfScrollView: [String: CGFloat] = [:]
     private var collapsedIntervalSpace: CGFloat?
     private var isArranged = false
+    var barFadeInOutOffset: CGFloat = kMinFadeInOutOffset {
+        didSet {
+            guard barFadeInOutOffset < kMinFadeInOutOffset else { return }
+            barFadeInOutOffset = kMinFadeInOutOffset
+        }
+    }
     var headerHeight: CGFloat {
         set {
             guard var header = viewConfiguration[.header] else {
@@ -91,7 +99,6 @@ extension CollapsingViewController {
         let lastOffset = lastOffsetsOfScrollView[key] ?? 0
         let offsetY = scrollView.contentOffset.y
 
-        // TODO: Add/Remove the navigationBar items and update the background for navigationBar.
         let frame = content.frame
         var leaveIntervalSpace: CGFloat?
         if lastOffset > offsetY {
@@ -99,7 +106,6 @@ extension CollapsingViewController {
                 update(contentView: content, positionY: min(frame.minY+(lastOffset - offsetY), interspace))
                 updateHeaderPosition()
                 scrollView.contentOffset = .zero
-                
                 leaveIntervalSpace = content.frame.minY - view.safeAreaInsets.top
             }
         }
@@ -108,7 +114,6 @@ extension CollapsingViewController {
                 update(contentView: content, positionY: max(frame.minY+(lastOffset - offsetY), view.safeAreaInsets.top))
                 updateHeaderPosition()
                 scrollView.contentOffset = .zero
-                
                 leaveIntervalSpace = content.frame.minY - view.safeAreaInsets.top
             }
         }
@@ -117,20 +122,20 @@ extension CollapsingViewController {
         
         guard let space = leaveIntervalSpace else { return }
         
-        if let _ = navigationItem.rightBarButtonItems, space > 44 {
+        if let _ = navigationItem.rightBarButtonItems, space > barFadeInOutOffset {
             navigationItem.setRightBarButtonItems(nil, animated: true)
         }
-        else if let items = collapsedBarRightItems, navigationItem.rightBarButtonItems == nil, space <= 44 {
+        else if let items = collapsedBarRightItems, navigationItem.rightBarButtonItems == nil, space <= barFadeInOutOffset {
             navigationItem.setRightBarButtonItems(items, animated: false)
         }
         
-        guard 0...44 ~= space else {
+        guard 0...barFadeInOutOffset ~= space else {
             if space > 0 {
                 collapsedBarView.alpha = 0
             }
             return
         }
-        collapsedBarView.alpha = 1 - (space / 44)
+        collapsedBarView.alpha = 1 - ((space - barFadeInOutOffset + kMinFadeInOutOffset) / kMinFadeInOutOffset)
     }
     
     private func update(contentView: UIView, positionY y: CGFloat) {
@@ -175,12 +180,6 @@ private extension CollapsingViewController {
         updateBarView()
         collapsedBarView.frame = CGRect(origin: .zero, size: CGSize(width: width, height: UIApplication.statusBarHight + 44))
         view.addSubview(collapsedBarView)
-    }
-    
-    func updateNavigationBarIfNeed() {
-        guard let navigationController = navigationController, !navigationController.isNavigationBarHidden else {
-            return
-        }
     }
     
     func updateHeaderPosition() {
