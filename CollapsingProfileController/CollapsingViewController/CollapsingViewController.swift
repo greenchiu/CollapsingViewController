@@ -92,12 +92,15 @@ extension CollapsingViewController {
         let offsetY = scrollView.contentOffset.y
 
         // TODO: Add/Remove the navigationBar items and update the background for navigationBar.
-        var frame = content.frame
+        let frame = content.frame
+        var leaveIntervalSpace: CGFloat?
         if lastOffset > offsetY {
             if frame.minY < interspace {
                 update(contentView: content, positionY: min(frame.minY+(lastOffset - offsetY), interspace))
                 updateHeaderPosition()
                 scrollView.contentOffset = .zero
+                
+                leaveIntervalSpace = content.frame.minY - view.safeAreaInsets.top
             }
         }
         else if lastOffset < offsetY {
@@ -105,10 +108,21 @@ extension CollapsingViewController {
                 update(contentView: content, positionY: max(frame.minY+(lastOffset - offsetY), view.safeAreaInsets.top))
                 updateHeaderPosition()
                 scrollView.contentOffset = .zero
+                
+                leaveIntervalSpace = content.frame.minY - view.safeAreaInsets.top
             }
         }
         
         lastOffsetsOfScrollView[key] = lastOffset
+        
+        guard let space = leaveIntervalSpace else { return }
+        guard 0...44 ~= space else {
+            if space > 0 {
+                collapsedBarView.alpha = 0
+            }
+            return
+        }
+        collapsedBarView.alpha = 1 - (space / 44)
     }
     
     private func update(contentView: UIView, positionY y: CGFloat) {
