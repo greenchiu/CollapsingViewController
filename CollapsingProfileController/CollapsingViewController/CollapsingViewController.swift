@@ -31,7 +31,6 @@ private extension String {
 class CollapsingViewController: UIViewController {
     private lazy var collapsedBarView = CollapsedBarView()
     private var collapsed = false
-    private var barConfiguration = BarConfiguration()
     private var viewConfiguration: [String.CollapsingKey: CollapsingInnerView] = [:]
     private var lastOffsetsOfScrollView: [String: CGFloat] = [:]
     private var collapsedIntervalSpace: CGFloat?
@@ -57,16 +56,24 @@ class CollapsingViewController: UIViewController {
     }
     
     var collapsedTitle: String? {
-        set { barConfiguration.title = newValue }
-        get { return barConfiguration.title }
+        set { collapsedBarView.title = newValue }
+        get { return collapsedBarView.title }
     }
-    var collapsedBarColor: UIColor {
-        set { barConfiguration.color = newValue }
-        get { return barConfiguration.color }
+    
+    var collapsedTitleColor: UIColor {
+        set { collapsedBarView.textColor = newValue }
+        get { return collapsedBarView.textColor }
+    }
+    
+    var collapsedBarColor: UIColor? {
+        set { collapsedBarView.backgroundColor = newValue }
+        get { return collapsedBarView.backgroundColor }
     }
     var collapsedBarRightItems: [UIBarButtonItem]? {
-        set { barConfiguration.rightItems = newValue }
-        get { return barConfiguration.rightItems }
+        didSet {
+            guard collapsedBarView.alpha > 0, let items = collapsedBarRightItems else { return }
+            navigationItem.setRightBarButtonItems(items, animated: true)
+        }
     }
     
     override func viewDidLoad() {
@@ -126,7 +133,7 @@ extension CollapsingViewController {
             navigationItem.setRightBarButtonItems(nil, animated: true)
         }
         else if let items = collapsedBarRightItems, navigationItem.rightBarButtonItems == nil, space <= barFadeInOutOffset {
-            navigationItem.setRightBarButtonItems(items, animated: false)
+            navigationItem.setRightBarButtonItems(items, animated: true)
         }
         
         guard 0...barFadeInOutOffset ~= space else {
@@ -177,7 +184,6 @@ private extension CollapsingViewController {
         content.view.frame = CGRect(x: 0, y: offset, width: width, height: view.bounds.height - offset)
         view.addSubview(content.view)
         
-        updateBarView()
         collapsedBarView.frame = CGRect(origin: .zero, size: CGSize(width: width, height: UIApplication.statusBarHight + 44))
         view.addSubview(collapsedBarView)
     }
@@ -189,23 +195,12 @@ private extension CollapsingViewController {
         frame.origin = CGPoint(x: 0, y: content.frame.minY - header.height!)
         header.view.frame = frame
     }
-    
-    func updateBarView() {
-        collapsedBarView.title = collapsedTitle
-        collapsedBarView.backgroundColor = collapsedBarColor
-    }
 }
 
 ///
-/// Inner models
+/// Internal models
 ///
 private extension CollapsingViewController {
-    struct BarConfiguration {
-        var rightItems: [UIBarButtonItem]? = nil
-        var color: UIColor = .black
-        var title: String? = nil
-    }
-    
     struct CollapsingInnerView {
         enum Height {
             case value(CGFloat)
@@ -224,9 +219,15 @@ private class CollapsedBarView: UIView {
         get { return textLabel.text }
     }
     
+    var textColor: UIColor {
+        set { textLabel.textColor = newValue }
+        get { return textLabel.textColor }
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
-        textLabel.font = .systemFont(ofSize: 18, weight: .bold)
+        textLabel.font = .systemFont(ofSize: 24, weight: .bold)
+        textLabel.textAlignment = .center
         addSubview(textLabel)
         alpha = 0
     }
