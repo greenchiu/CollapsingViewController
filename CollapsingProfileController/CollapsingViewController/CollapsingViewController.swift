@@ -116,6 +116,14 @@ extension CollapsingViewController {
         lastOffsetsOfScrollView[key] = lastOffset
         
         guard let space = leaveIntervalSpace else { return }
+        
+        if let _ = navigationItem.rightBarButtonItems, space > 44 {
+            navigationItem.setRightBarButtonItems(nil, animated: true)
+        }
+        else if let items = collapsedBarRightItems, navigationItem.rightBarButtonItems == nil, space <= 44 {
+            navigationItem.setRightBarButtonItems(items, animated: false)
+        }
+        
         guard 0...44 ~= space else {
             if space > 0 {
                 collapsedBarView.alpha = 0
