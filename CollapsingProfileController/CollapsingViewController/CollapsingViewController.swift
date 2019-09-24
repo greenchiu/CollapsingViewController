@@ -95,26 +95,27 @@ extension CollapsingViewController {
         var frame = content.frame
         if lastOffset > offsetY {
             if frame.minY < interspace {
-                let newY = min(frame.minY+(lastOffset - offsetY), interspace)
-                frame.origin = CGPoint(x: 0, y: newY)
-                frame.size = CGSize(width: view.bounds.width, height: view.bounds.height - newY)
-                content.frame = frame
+                update(contentView: content, positionY: min(frame.minY+(lastOffset - offsetY), interspace))
                 updateHeaderPosition()
                 scrollView.contentOffset = .zero
             }
         }
         else if lastOffset < offsetY {
             if frame.minY > view.safeAreaInsets.top {
-                let newY = max(frame.minY+(lastOffset - offsetY), view.safeAreaInsets.top)
-                frame.origin = CGPoint(x: 0, y: newY)
-                frame.size = CGSize(width: view.bounds.width, height: view.bounds.height - newY)
-                content.frame = frame
+                update(contentView: content, positionY: max(frame.minY+(lastOffset - offsetY), view.safeAreaInsets.top))
                 updateHeaderPosition()
                 scrollView.contentOffset = .zero
             }
         }
         
         lastOffsetsOfScrollView[key] = lastOffset
+    }
+    
+    private func update(contentView: UIView, positionY y: CGFloat) {
+        var frame = contentView.frame
+        frame.origin = CGPoint(x: 0, y: y)
+        frame.size = CGSize(width: view.bounds.width, height: view.bounds.height - y)
+        contentView.frame = frame
     }
 }
 
